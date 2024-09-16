@@ -1,0 +1,99 @@
+How Linux works
+
+
+The superblock is the section that contains information about the filesytem in general
+Such as the number of Inodes and data blocks and ho wmany Bytes are in each Data block in
+kilobytes.
+
+The inode table consists of several inodes (information nodes) Each inode describes one file
+or directory on the filesystem and contains a unique inode number for identifcation,
+what is more important is the inode stores information such as the file size and Data block
+Locations, Permissions ownership and last data modified. When a file is deleted only its inode
+which serves as a pointer to the actual data is deleted.
+
+The Actual data that acts as the contents of the file as well as the filename are stored in
+data blocks which are referenced by the inode. In filesystem-neutral terminology blocks
+are known as allocation units as they are th e unit which disk space is allocated for storage
+
+
+2. How do Linked files work?
+
+There are two types of linked files. Symbolic Links or symlinks and a hardlink
+
+
+
+Hard linked files share the same inode and inode number. As a result they share the same inode
+number and data blocks, but the data blocks just allow for multiple filenames Thus when one
+hardlinked file is modified the other hardlinked files are updated as well. You can hard-link
+a file unlimited number of times however the hard-linked files must reside on the same filesystem
+To create a hard link you must use the ln (link) command and specify two commands which are
+the files that you want to link. for exampe ln (file1 file2) would link file1 and file2 into 
+the same datablock. This will give file1 and file2 the same inode and data section. Although
+Hard links share the same inode and data section, deleting a hard-linked file does not delete
+all the other hard-linked files it simply removes one filename reference. Removing a hardlink
+can be achieved by removing one of the files which lowers the link count.
+To view the inode number of hard linked files use ls -li The inode number is placed on the
+left of the directory listing on each line, So it is on the upmost left of the command.
+
+Directorys arent normally hard-linked as the result will consist of two directories with the
+same contents However the root user has the ability to hard link directory using the -F or
+-d option to the ln command. Only directorys that need to maintain identically file contents
+are hard linked for example the /etc/init.d directory is hard linked to the /etc/rc.d/init.d 
+directory
+
+
+
+
+Symbolic links are different from hard links as they do not share the same inode and datablock
+with their target file; One is merely a pointer to the other thus both files have different 
+sizes. The data blocks in a symbolically linked file contain only the pathname to the target
+file. When a user edits a symbolically linked file she is actually editing the target file. 
+Thus is a target file is deleted the symbolic link serves no function and points to a nonexistent file
+Symbolic links are known as soft links or symlinks
+to create a symbolic link you use the -s option to the ln command. To create a symbolic link
+to file3 called file for for example. ln -s (file1 file2) this will create a pointer file to
+file1 named file2. as with hard-links the paths can be relative or absolute. to see if this works
+use ls -l and it will show *file2 -> file1* which shows that file2 is simply a pointer to file1
+They also do not share the same inode, permissions and size and file2 is different then file1
+Another difference between hard links and symbolic links is that symlinks do not need to reside
+on the same filesystem on the target. Instead they point to the target filename and do not
+require the same inode.   
+liveuser@localhost-live:~$ ln -s file1 file2
+liveuser@localhost-live:~$ nano file2
+liveuser@localhost-live:~$ 
+liveuser@localhost-live:~$ cat file1
+Hello does this work
+liveuser@localhost-live:~$ 
+
+
+
+
+
+
+3. Finding files
+Before using the file management commands mentioned in the precedding section You must know
+the locations of the files involved. The fastest method to search for files in the linux dir
+tree is to use the locate command. For example to view all the files under the root directory
+with the text inittab or with inittab as part of the filename you can just type 
+locate inittab.
+
+The locate command looks in a premade database that contains the list of all the files on 
+the system. This database is indexed much like a textbook for fast searching, yet can become
+outdated as files are added and removed. the database used for the locate command is
+/var/lib/mlocate/mlocate.db and is update each day and can auto updated by running the
+updatedb command. You can also exclude certain directories by adding them to to the
+/etc/updatedb.conf file; this is called pruning for example to add the /etc path from being 
+indexed by the updatedb command add etc as an argument to the PRUNEPATH = line within /etc/updateb.conf
+
+alot of the tims ur gonna wanna pipe this to less or more in case it returns too many results
+
+
+an alternative to this is find. the find command does not use a premade index of files; instead
+it searches the directory tree recursively, starting from a certain dir for for files that
+meet a certain critea. the format for find is as follow 
+*find <start-directory> -critera <what to find>* for example to find any files named inittab
+under the /etc dir you can use the command find /etc -name inittab.
+
+
+
+
